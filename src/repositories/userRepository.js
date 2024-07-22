@@ -18,7 +18,7 @@ export const createUser = asyncHandler(async (req, res) => {
     });
 
     return res.json({
-      id: user._id,
+      _id: user._id,
       username: user.username,
       email: user.email,
       token: generateToken(user._id),

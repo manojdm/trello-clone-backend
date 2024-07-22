@@ -1,9 +1,14 @@
 import express from "express";
+import dotenv from "dotenv";
 import userRoutes from "./routes/userRoutes.js";
+import todoRoutes from "./routes/todoRoutes.js";
 import { connectToDb } from "./config/db.js";
-import { env } from "./config/dotenv.js";
+import { errorHandler } from "./middlewares/errorHandling.js";
 
 const app = express();
+
+//env config
+const envConfig = dotenv.config();
 
 //Allowing Body request body objects
 app.use(express.json());
@@ -19,6 +24,10 @@ connectToDb();
 
 //routes
 app.use("/api/user", userRoutes);
+app.use("/api/todos", todoRoutes);
+
+//error handler middleware
+app.use(errorHandler);
 
 //Starting express server
 const PORT = process.env.APP_PORT || 8080;

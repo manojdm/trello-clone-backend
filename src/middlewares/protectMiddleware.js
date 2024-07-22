@@ -17,6 +17,9 @@ export const protect = asyncHandler(async (req, res, next) => {
       next();
     } else {
       res.status(401);
+      res.json({
+        error: "NOT Authorized",
+      });
       throw new Error("not authorized");
     }
   } catch (e) {
