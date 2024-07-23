@@ -7,8 +7,14 @@ export const createUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
   let user = await User.findOne({
-    $or: [{ username: username, email: email }],
+    $or: [{ username: username }, { email: email }],
   });
+
+  if (user && !user.password && user.googleId) {
+    res
+      .status(409)
+      .json({ message: "User already exists, please use google to login" });
+  }
 
   if (!user) {
     user = await User.create({
@@ -34,6 +40,12 @@ export const loginUser = asyncHandler(async (req, res) => {
     username: username,
   });
 
+  if (user && !user?.password && user.googleId) {
+    res
+      .status(409)
+      .json({ message: "User already exists, please use google to login" });
+  }
+
   if (user && (await user.matchPassword(password))) {
     return res.json({
       id: user._id,
@@ -50,7 +62,7 @@ export const authGoogle = asyncHandler(async (req, res) => {
   const { email, username, googleId } = req.body;
 
   let user = await User.findOne({
-    $or: [{ username: username, email: email }],
+    $or: [{ email: email }, { username: username }],
   });
 
   if (!user) {
