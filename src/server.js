@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import userRoutes from "./routes/userRoutes.js";
-import todoRoutes from "./routes/todoRoutes.js";
+import taskRoutes from "./routes/taskRoutes.js";
 import { connectToDb } from "./config/db.js";
 import { errorHandler } from "./middlewares/errorHandling.js";
 
@@ -24,7 +24,7 @@ connectToDb();
 
 //routes
 app.use("/api/user", userRoutes);
-app.use("/api/todos", todoRoutes);
+app.use("/api/tasks", taskRoutes);
 
 //error handler middleware
 app.use(errorHandler);

@@ -45,3 +45,33 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   return res.status(404).json({ message: "Incorrect credentials" });
 });
+
+export const authGoogle = asyncHandler(async (req, res) => {
+  const { email, username, googleId } = req.body;
+
+  let user = await User.findOne({
+    $or: [{ username: username, email: email }],
+  });
+
+  if (!user) {
+    user = await User.create({
+      username,
+      email,
+      googleId,
+    });
+
+    return res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  }
+
+  return res.status(201).json({
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+    token: generateToken(user._id),
+  });
+});

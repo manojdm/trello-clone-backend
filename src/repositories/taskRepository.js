@@ -1,35 +1,35 @@
-import Todo from "../modals/todosModal.js";
+import Task from "../modals/tasksModal.js";
 import asyncHandler from "express-async-handler";
 
-export const createTodo = asyncHandler(async (req, res) => {
+export const createTask = asyncHandler(async (req, res) => {
   const { title, description, status } = req.body;
 
   console.log(title, description, status);
 
-  const todo = await Todo.create({
+  const task = await Task.create({
     user: req.user?._id,
     title,
     description,
     status,
   });
 
-  return res.json(todo);
+  return res.json(task);
 });
 
-export const getTodos = asyncHandler(async (req, res) => {
-  const todos = await Todo.find({
+export const getTasks = asyncHandler(async (req, res) => {
+  const tasks = await Task.find({
     user: req.user._id,
   });
 
-  res.json(todos);
+  res.json(tasks);
 });
 
-export const updateTodoById = asyncHandler(async (req, res) => {
+export const updateTaskById = asyncHandler(async (req, res) => {
   const _id = req.params.id;
   const { title, description, status } = req.body;
 
   try {
-    const todo = await Todo.findByIdAndUpdate(
+    const task = await Task.findByIdAndUpdate(
       _id,
       {
         title,
@@ -41,27 +41,27 @@ export const updateTodoById = asyncHandler(async (req, res) => {
       }
     );
 
-    const todos = await Todo.find({
+    const tasks = await Task.find({
       user: req.user._id,
     });
 
-    return res.status(201).json(todos);
+    return res.status(201).json(tasks);
   } catch (e) {
     res.status(404).json({ message: "Item not found" });
   }
 });
 
-export const deleteTodoById = asyncHandler(async (req, res) => {
+export const deleteTaskById = asyncHandler(async (req, res) => {
   const id = req.params.id;
 
   try {
-    const todo = await Todo.deleteOne({ _id: id });
+    const task = await Task.deleteOne({ _id: id });
 
-    const todos = await Todo.find({
+    const tasks = await Task.find({
       user: req.user._id,
     });
 
-    return res.status(201).json(todos);
+    return res.status(201).json(tasks);
   } catch (e) {
     res.status(404).json({ message: "Item not found" });
   }

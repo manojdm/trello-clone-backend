@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import User from "./userModal.js";
 
-const todoSchema = new mongoose.Schema(
+const tasksSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -26,6 +26,6 @@ const todoSchema = new mongoose.Schema(
   }
 );
 
-const Todo = mongoose.model("Todo", todoSchema);
+const Task = mongoose.model("Task", tasksSchema);
 
-export default Todo;
+export default Task;
