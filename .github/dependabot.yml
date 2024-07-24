@@ -1,0 +1,17 @@
+# DO NOT EDIT OTHER THAN .github REPO
+# DISCLAIMER: THIS CONFIGURATION IS CENTRALLY MANAGED AT
+# https://github.com/fileloom/.github AND REPLICATED
+# ANY CHANGE MADE DIRECTLY IN OTHER REPOS WILL BE OVERRIDDEN IN
+# NEXT REPLICATION.
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 25
+    rebase-strategy: "disabled"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]

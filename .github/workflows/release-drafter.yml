@@ -1,0 +1,28 @@
+# DO NOT EDIT OTHER THAN .github REPO
+# DISCLAIMER: THIS CONFIGURATION IS CENTRALLY MANAGED AT
+# https://github.com/file-loom/.github AND REPLICATED
+# ANY CHANGE MADE DIRECTLY IN OTHER REPOS WILL BE OVERRIDDEN IN
+# NEXT REPLICATION.
+
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+  pull_request:
+    # Only following types are handled by the action, but one can default to all as well
+    types: [opened, reopened, synchronize]
+
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write # for release-drafter/release-drafter to create a github release
+      pull-requests: write # for release-drafter/release-drafter to add label to PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
