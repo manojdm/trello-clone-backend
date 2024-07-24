@@ -1,72 +1,89 @@
 {
-  "ipcMode": null,
-  "executionRoleArn": "trello-ecs-task-execution-role",
+  "taskDefinitionArn": "arn:aws:ecs:ap-south-1:428239655465:task-definition/trello-clone-td:1",
   "containerDefinitions": [
-    {
-      "dnsSearchDomains": [],
-      "environmentFiles": [],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/trello-clone-td",
-          "awslogs-region": "ap-south-1",
-          "awslogs-create-group": "true",
-          "awslogs-stream-prefix": "api"
-        }
+      {
+          "name": "trello-clone",
+          "image": "428239655465.dkr.ecr.ap-south-1.amazonaws.com/trello-clone",
+          "cpu": 0,
+          "portMappings": [
+              {
+                  "name": "trello-clone-8080-port",
+                  "containerPort": 8080,
+                  "hostPort": 8080,
+                  "protocol": "tcp",
+                  "appProtocol": "http"
+              }
+          ],
+          "essential": true,
+          "environment": [],
+          "environmentFiles": [],
+          "mountPoints": [],
+          "volumesFrom": [],
+          "ulimits": [],
+          "logConfiguration": {
+              "logDriver": "awslogs",
+              "options": {
+                  "awslogs-group": "/ecs/trello-clone-td",
+                  "awslogs-create-group": "true",
+                  "awslogs-region": "ap-south-1",
+                  "awslogs-stream-prefix": "ecs"
+              },
+              "secretOptions": []
+          },
+          "systemControls": []
+      }
+  ],
+  "family": "trello-clone-td",
+  "taskRoleArn": "arn:aws:iam::428239655465:role/trello-ecs-task-execution-role",
+  "executionRoleArn": "arn:aws:iam::428239655465:role/trello-ecs-task-execution-role",
+  "networkMode": "awsvpc",
+  "revision": 1,
+  "volumes": [],
+  "status": "ACTIVE",
+  "requiresAttributes": [
+      {
+          "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
       },
-      "entryPoint": null,
-      "portMappings": [
-        {
-          "hostPort": 8080,
-          "protocol": "tcp",
-          "containerPort": 8080
-        }
-      ],
-      "command": null,
-      "linuxParameters": null,
-      "cpu": 256,
-      "resourceRequirements": null,
-      "ulimits": null,
-      "dnsServers": [],
-      "mountPoints": [],
-      "workingDirectory": null,
-      "secrets": null,
-      "dockerSecurityOptions": [],
-      "memory": 512,
-      "memoryReservation": 512,
-      "volumesFrom": [],
-      "stopTimeout": null,
-      "startTimeout": null,
-      "firelensConfiguration": null,
-      "dependsOn": null,
-      "disableNetworking": null,
-      "interactive": null,
-      "healthCheck": null,
-      "essential": true,
-      "links": [],
-      "hostname": null,
-      "extraHosts": null,
-      "pseudoTerminal": null,
-      "user": null,
-      "readonlyRootFilesystem": false,
-      "dockerLabels": null,
-      "systemControls": [],
-      "privileged": null,
-      "name": "api"
-    }
+      {
+          "name": "ecs.capability.execution-role-awslogs"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.ecr-auth"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.task-iam-role"
+      },
+      {
+          "name": "ecs.capability.execution-role-ecr-pull"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+      },
+      {
+          "name": "ecs.capability.task-eni"
+      },
+      {
+          "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+      }
   ],
   "placementConstraints": [],
-  "memory": "512",
-  "taskRoleArn": "trello-ecs-task-execution-role",
-  "family": "trello-clone-td",
-  "pidMode": null,
-  "requiresCompatibilities": [
-    "FARGATE"
+  "compatibilities": [
+      "EC2",
+      "FARGATE"
   ],
-  "networkMode": "awsvpc",
-  "runtimePlatform": null,
-  "cpu": "256",
-  "inferenceAccelerators": null,
-  "proxyConfiguration": null,
-  "volumes": []
+  "requiresCompatibilities": [
+      "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024",
+  "runtimePlatform": {
+      "cpuArchitecture": "X86_64",
+      "operatingSystemFamily": "LINUX"
+  },
+  "registeredAt": "2024-07-24T03:53:48.021Z",
+  "registeredBy": "arn:aws:sts::428239655465:assumed-role/AWSReservedSSO_AdministratorAccess_1ce523c2ec28975a/manumanoj709@gmail.com",
+  "tags": []
 }
