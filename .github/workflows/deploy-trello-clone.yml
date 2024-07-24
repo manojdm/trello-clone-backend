@@ -1,0 +1,135 @@
+name: API Deploy
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        required: false
+
+jobs:
+  environment-vars:
+    name: Set environment variables
+    runs-on: ubuntu-latest
+    outputs:
+      ENVIRONMENT: ${{ steps.set-environment-specific-vars.outputs.ENVIRONMENT }}
+      DEPLOYER_ROLE: ${{ steps.set-environment-specific-vars.outputs.DEPLOYER_ROLE }}
+      ECR_REPOSITORY: ${{ steps.set-environment-specific-vars.outputs.ECR_REPOSITORY }}
+
+    steps:
+      - id: set-environment-specific-vars
+        name: Set environment specific variables
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "release" || "${{ github.event.inputs.environment }}" == "production" ]]; then
+            ENVIRONMENT="production"
+            DEPLOYER_ROLE="arn:aws:iam::428239655465:role/github-action-trello-clone"
+            ECR_REPOSITORY="trello-clone"
+          fi
+
+          echo "::set-output name=ENVIRONMENT::$ENVIRONMENT"
+          echo "::set-output name=DEPLOYER_ROLE::$DEPLOYER_ROLE"
+          echo "::set-output name=ECR_REPOSITORY::$ECR_REPOSITORY"
+
+  build:
+    needs: environment-vars
+    name: Build API Image & Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ needs.environment-vars.outputs.ENVIRONMENT }}
+    permissions:
+      # https://github.com/aws-actions/configure-aws-credentials/issues/271
+      packages: write
+      contents: read
+      id-token: write
+
+    env:
+      # <---START: Infra variables and secrets--->
+      AWS_DEFAULT_REGION: ap-south-1
+      CONTAINER_NAME: trello
+      ECS_SERVICE: trello-clone-service
+      ECS_CLUSTER: trello-clone-cluster
+      ECS_TASK_DEFINITION: deploy/task-definition-trello-clone.json
+      DEPLOYER_ROLE: ${{ needs.environment-vars.outputs.DEPLOYER_ROLE }}
+      ECR_REPOSITORY: ${{ needs.environment-vars.outputs.ECR_REPOSITORY }}
+      # <---END: Infra variables--->
+
+      # <---START: Application variables and secrets--->
+      ENVIRONMENT: ${{ needs.environment-vars.outputs.ENVIRONMENT }}
+
+      # <---END: Application variables and secrets--->
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v1
+        with:
+          APP_PORT: ${{ secrets.APP_PORT }}
+          DB_CONNECTION_URL: ${{ secrets.DB_CONNECTION_URL }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials from Alpha account
+        # Using master as per https://github.com/aws-actions/configure-aws-credentials/issues/271
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          # Configuring with AWS IAM Role to avoid long running IAM credentials
+          role-to-assume: ${{env.DEPLOYER_ROLE}}
+          role-session-name: Github-Action-API-Deployer
+          aws-region: ${{env.AWS_DEFAULT_REGION}}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Tag Docker Image
+        id: tag-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+        run: |
+          # Get image tag (If its a release, use tag else use sha)
+          tag="${GITHUB_SHA}"
+          if [ "${GITHUB_EVENT_NAME}" == "release" ]; then
+            tag=${{github.event.release.tag_name}}
+          fi
+
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$tag"
+
+      - name: Build and push Docker image to Amazon ECR # Add condition on whether already existing or not. Add one more step
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.tag-image.outputs.image }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max,ignore-error=true
+          provenance: false
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.tag-image.outputs.image }}
+          environment-variables: |
+            ENVIRONMENT=${{ env.ENVIRONMENT }}
+            APP_PORT=${{ secrets.APP_PORT }}
+            DB_CONNECTION_URL=${{ secrets.DB_CONNECTION_URL }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
