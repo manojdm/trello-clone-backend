@@ -50,7 +50,7 @@ jobs:
     env:
       # <---START: Infra variables and secrets--->
       AWS_DEFAULT_REGION: ap-south-1
-      CONTAINER_NAME: trello
+      CONTAINER_NAME: trello-clone
       ECS_SERVICE: trello-clone-service
       ECS_CLUSTER: trello-clone-cluster
       ECS_TASK_DEFINITION: deploy/task-definition-trello-clone.json
