@@ -4,16 +4,18 @@ import asyncHandler from "express-async-handler";
 export const createTask = asyncHandler(async (req, res) => {
   const { title, description, status } = req.body;
 
-  console.log(title, description, status);
-
-  const task = await Task.create({
+  await Task.create({
     user: req.user?._id,
     title,
     description,
     status,
   });
 
-  return res.json(task);
+  const tasks = await Task.find({
+    user: req.user._id,
+  });
+
+  return res.json(tasks);
 });
 
 export const getTasks = asyncHandler(async (req, res) => {
@@ -29,7 +31,7 @@ export const updateTaskById = asyncHandler(async (req, res) => {
   const { title, description, status } = req.body;
 
   try {
-    const task = await Task.findByIdAndUpdate(
+    await Task.findByIdAndUpdate(
       _id,
       {
         title,
@@ -55,7 +57,7 @@ export const deleteTaskById = asyncHandler(async (req, res) => {
   const id = req.params.id;
 
   try {
-    const task = await Task.deleteOne({ _id: id });
+    await Task.deleteOne({ _id: id });
 
     const tasks = await Task.find({
       user: req.user._id,
