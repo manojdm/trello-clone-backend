@@ -4,11 +4,15 @@ import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import { connectToDb } from "./config/db.js";
 import { errorHandler } from "./middlewares/errorHandling.js";
+import cors from "cors";
 
 const app = express();
 
 //env config
 const envConfig = dotenv.config();
+
+//cors
+app.use(cors());
 
 //Allowing Body request body objects
 app.use(express.json());
